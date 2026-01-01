@@ -1,19 +1,35 @@
+// FILE: src/main/java/ma/yassine/arabicnlp/search/SearchEngine.java
 package ma.yassine.arabicnlp.search;
 
-import java.util.List;
+import java.util.*;
 
-/**
- * Search engine for Arabic documents
- */
 public class SearchEngine {
-    
-    /**
-     * Search for documents
-     * @param query search query
-     * @return list of results
-     */
-    public List<String> search(String query) {
-        // Implementation for document search
-        return null;
+
+    public static List<SearchResult> search(String query, int topK) {
+
+        double[] queryVector = QueryVectorizer.vectorize(
+                query,
+                TFIDFLoader.vocabulary,
+                TFIDFLoader.documents.size()
+        );
+
+        List<SearchResult> results = new ArrayList<>();
+
+        for (int i = 0; i < TFIDFLoader.tfidfMatrix.length; i++) {
+            double score = CosineSimilarity.compute(
+                    queryVector,
+                    TFIDFLoader.tfidfMatrix[i]
+            );
+            if (score > 0) {
+                results.add(new SearchResult(
+                        TFIDFLoader.documents.get(i),
+                        score
+                ));
+            }
+        }
+
+        results.sort((a, b) -> Double.compare(b.score, a.score));
+
+        return results.subList(0, Math.min(topK, results.size()));
     }
 }

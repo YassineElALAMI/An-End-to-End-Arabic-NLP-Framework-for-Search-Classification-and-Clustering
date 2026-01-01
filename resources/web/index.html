@@ -1,0 +1,88 @@
+<!-- FILE: src/main/resources/web/index.html -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Arabic Search Engine</title>
+<style>
+body{font-family:Arial;background:#fafafa;padding:30px;direction:rtl}
+.container{max-width:900px;margin:auto}
+input{width:75%;padding:10px;font-size:16px}
+button{padding:10px 20px;font-size:16px}
+.result{background:#fff;border:1px solid #ddd;margin-top:10px;padding:15px;cursor:pointer;transition:0.3s}
+.result:hover{background:#f0f0f0;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.score{color:green;font-size:13px}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000}
+.modal.show{display:flex;justify-content:center;align-items:center}
+.modal-content{background:#fff;width:90%;max-width:800px;max-height:80vh;overflow-y:auto;padding:30px;border-radius:5px;position:relative}
+.close-btn{position:absolute;top:10px;right:10px;font-size:28px;cursor:pointer;border:none;background:none}
+.file-title{color:#333;margin-bottom:15px;font-size:20px;font-weight:bold}
+.file-content{line-height:1.6;white-space:pre-wrap;word-wrap:break-word;color:#555}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Arabic Search Engine</h2>
+<input id="q" placeholder="اكتب عبارة البحث..." />
+<button onclick="search()">بحث</button>
+<div id="results"></div>
+</div>
+
+<div id="fileModal" class="modal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <div class="file-title" id="modalTitle"></div>
+    <div class="file-content" id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+async function search(){
+  const q=document.getElementById("q").value.trim();
+  if(!q)return;
+  const resDiv=document.getElementById("results");
+  resDiv.innerHTML="جاري البحث...";
+  try{
+    const r=await fetch("http://localhost:4567/search?q="+encodeURIComponent(q));
+    const data=await r.json();
+    if(data.length===0){resDiv.innerHTML="لا نتائج";return;}
+    let html="";
+    data.forEach((d,i)=>{
+      html+=`
+        <div class="result" onclick="viewFile('${d.document}')">
+          <b>${i+1}. ${d.document}</b>
+          <div class="score">Similarity: ${d.score.toFixed(4)}</div>
+        </div>`;
+    });
+    resDiv.innerHTML=html;
+  }catch(e){
+    resDiv.innerHTML="خطأ في الاتصال: "+e.message;
+  }
+}
+
+async function viewFile(filename){
+  try{
+    const r=await fetch("http://localhost:4567/file?name="+encodeURIComponent(filename));
+    const content=await r.text();
+    document.getElementById("modalTitle").textContent=filename;
+    document.getElementById("modalContent").textContent=content;
+    document.getElementById("fileModal").classList.add("show");
+  }catch(e){
+    alert("خطأ في تحميل الملف: "+e.message);
+  }
+}
+
+function closeModal(){
+  document.getElementById("fileModal").classList.remove("show");
+}
+
+// Close modal when clicking outside of it
+document.addEventListener("click", function(e){
+  const modal=document.getElementById("fileModal");
+  if(e.target===modal){
+    closeModal();
+  }
+});
+</script>
+</body>
+</html>
