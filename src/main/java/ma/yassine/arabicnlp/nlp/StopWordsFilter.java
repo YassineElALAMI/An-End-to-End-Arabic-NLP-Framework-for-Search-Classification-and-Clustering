@@ -1,28 +1,31 @@
 package ma.yassine.arabicnlp.nlp;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Stop words filter for Arabic text
- */
 public class StopWordsFilter {
-    private Set<String> stopWords;
-    
-    /**
-     * Initialize stop words filter
-     */
-    public StopWordsFilter() {
-        // Load Arabic stop words
+
+    private static final Set<String> stopWords = new HashSet<>();
+
+    static {
+        try {
+            stopWords.addAll(
+                    Files.readAllLines(
+                            Paths.get("resources/stopwords/arabic_stopwords.txt")
+                    )
+            );
+        } catch (IOException e) {
+            System.err.println("❌ Could not load stopwords file");
+        }
     }
-    
-    /**
-     * Remove stop words from token list
-     * @param tokens input tokens
-     * @return filtered tokens
-     */
-    public List<String> filter(List<String> tokens) {
-        // Implementation for filtering stop words
-        return null;
+
+    public static List<String> removeStopWords(List<String> tokens) {
+        tokens.removeIf(stopWords::contains);
+        return tokens;
     }
 }
+

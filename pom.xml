@@ -15,6 +15,7 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <exec.mainClass>ma.yassine.arabicnlp.Main</exec.mainClass>
   </properties>
 
   <dependencies>
@@ -30,7 +31,7 @@
       <artifactId>arabic-stemmer</artifactId>
       <version>1.0</version>
       <scope>system</scope>
-      <systemPath>${project.basedir}/lib/arabic-stemmer.jar</systemPath>
+      <systemPath>${basedir}/lib/arabic-stemmer.jar</systemPath>
     </dependency>
 
 
@@ -47,6 +48,18 @@
         <configuration>
           <source>11</source>
           <target>11</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <mainClass>${exec.mainClass}</mainClass>
+          <includeProjectDependencies>true</includeProjectDependencies>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${basedir}/lib/arabic-stemmer.jar</additionalClasspathElement>
+          </additionalClasspathElements>
         </configuration>
       </plugin>
     </plugins>
