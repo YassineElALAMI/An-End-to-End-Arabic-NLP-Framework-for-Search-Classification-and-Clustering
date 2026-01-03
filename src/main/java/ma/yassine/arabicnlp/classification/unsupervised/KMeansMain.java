@@ -1,14 +1,15 @@
-// FILE: src/main/java/ma/yassine/arabicnlp/classification/supervised/NBMain.java
-package ma.yassine.arabicnlp.classification.supervised;
+// FILE: src/main/java/ma/yassine/arabicnlp/classification/unsupervised/KMeansMain.java
+package ma.yassine.arabicnlp.classification.unsupervised;
 
-import ma.yassine.arabicnlp.search.*;
-import ma.yassine.arabicnlp.classification.unsupervised.KMeans;
+import ma.yassine.arabicnlp.search.TFIDFLoader;
+import ma.yassine.arabicnlp.classification.supervised.LabelExtractor;
+
+import java.util.*;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
 
-public class NBMain {
+public class KMeansMain {
 
     // Define cluster names for the 5 clusters
     private static final String[] CLUSTER_NAMES = {
@@ -28,36 +29,37 @@ public class NBMain {
         System.out.println("Vocabulary size: " + TFIDFLoader.vocabulary.size());
 
         // Perform K-means clustering with k=5
-        KMeans kmeans = new KMeans(TFIDFLoader.tfidfMatrix, 5);
-        kmeans.fit();
-        int[] assignments = kmeans.getLabels();
+        int K = 5;
+        KMeans km = new KMeans(TFIDFLoader.tfidfMatrix, K);
+        km.fit();
+
+        int[] clusters = km.getLabels();
 
         // Create output directory for clusters
-        String outputDir = "resources/data/classified_clusters";
+        String outputDir = "resources/data/KMclusters";
         Files.createDirectories(Paths.get(outputDir));
 
         // Map to store cluster -> list of documents
-        Map<Integer, List<String>> clusters = new HashMap<>();
-        for (int i = 0; i < 5; i++) {
-            clusters.put(i, new ArrayList<>());
+        Map<Integer, List<String>> clusterMap = new HashMap<>();
+        for (int i = 0; i < K; i++) {
+            clusterMap.put(i, new ArrayList<>());
         }
 
         // Assign documents to clusters
-        for (int i = 0; i < assignments.length; i++) {
+        for (int i = 0; i < clusters.length; i++) {
             String doc = TFIDFLoader.documents.get(i);
-            int clusterId = assignments[i];
-            clusters.get(clusterId).add(doc);
-            System.out.println(doc + " -> Cluster " + clusterId);
+            int clusterId = clusters[i];
+            clusterMap.get(clusterId).add(doc);
         }
 
-        // Create cluster folders and copy files
-        for (int clusterId = 0; clusterId < 5; clusterId++) {
+        // Create cluster folders and save files
+        for (int clusterId = 0; clusterId < K; clusterId++) {
             String clusterName = CLUSTER_NAMES[clusterId];
             String clusterPath = outputDir + "/" + sanitizeFileName(clusterName);
             Files.createDirectories(Paths.get(clusterPath));
 
-            List<String> docsInCluster = clusters.get(clusterId);
-            System.out.println("\nProcessing cluster " + clusterId + " (" + clusterName + ") with " + docsInCluster.size() + " documents");
+            List<String> docsInCluster = clusterMap.get(clusterId);
+            System.out.println("\nCluster " + clusterId + " (" + clusterName + ") with " + docsInCluster.size() + " documents");
 
             for (String docFileName : docsInCluster) {
                 try {
@@ -66,7 +68,7 @@ public class NBMain {
                     if (Files.exists(sourcePath)) {
                         Path destPath = Paths.get(clusterPath, docFileName);
                         Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
-                        System.out.println("Copied: " + docFileName + " -> " + clusterName);
+                        System.out.println("  " + docFileName);
                     } else {
                         System.err.println("Source file not found: " + sourcePath);
                     }
@@ -76,7 +78,7 @@ public class NBMain {
             }
         }
 
-        System.out.println("\nClustering complete! Files organized in: " + outputDir);
+        System.out.println("\n✓ K-means clustering complete! Clusters saved to: " + outputDir);
     }
 
     /**

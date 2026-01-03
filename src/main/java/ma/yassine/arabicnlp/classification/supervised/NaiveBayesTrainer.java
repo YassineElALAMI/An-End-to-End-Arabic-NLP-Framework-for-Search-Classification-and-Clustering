@@ -8,6 +8,8 @@ import java.util.*;
 
 public class NaiveBayesTrainer {
 
+
+
     public static NaiveBayesModel train() {
 
         Map<String, Double> classCounts = new HashMap<>();
@@ -18,6 +20,7 @@ public class NaiveBayesTrainer {
 
         for (int d = 0; d < D; d++) {
             String doc = TFIDFLoader.documents.get(d);
+            if (doc == null) continue;
             String label = LabelExtractor.extractLabel(doc);
 
             classCounts.put(label, classCounts.getOrDefault(label, 0.0) + 1);
