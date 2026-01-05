@@ -7,7 +7,8 @@ A comprehensive Natural Language Processing system for Arabic text classificatio
 1. [Project Overview](#project-overview)
 2. [Project Architecture](#project-architecture)
 3. [Implementation Details](#implementation-details)
-4. [Building & Running](#building--running)
+4. [Evaluation & Metrics](#evaluation--metrics)
+5. [Building & Running](#building--running)
 
 ## Project Overview
 
@@ -80,7 +81,7 @@ ArabicNLPSystem/
 │   ├── evaluation/                     # Model evaluation utilities
 │   │   ├── ConfusionMatrix.java
 │   │   ├── Metrics.java
-│   │   └── CrossValidation.java
+│   │   └── MetricsMain.java            # Evaluation entry point
 │   │
 │   ├── utils/
 │   │   ├── FileUtils.java
@@ -267,6 +268,79 @@ classified_clusters/
 └── فنون/            # Arts documents
 ```
 
+## Evaluation & Metrics
+
+**What it does:** Evaluates the performance of the Naive Bayes classifier using various metrics.
+
+**Implementation:**
+- `ConfusionMatrix.java` - Builds and manages confusion matrix
+- `Metrics.java` - Computes classification metrics
+- `MetricsMain.java` - Main evaluation entry point
+
+**Evaluation Process** (`MetricsMain.java`):
+
+1. **Load Trained Models**
+   - Loads TF-IDF model from `resources/models/tfidf/`
+   - Loads Naive Bayes model from `resources/models/naive_bayes/`
+
+2. **Generate Predictions**
+   - Converts all documents to TF-IDF vectors
+   - Classifies each document using the trained Naive Bayes classifier
+   - Extracts true labels from document filenames
+
+3. **Build Confusion Matrix**
+   - Compares predicted vs. actual labels for all documents
+   - Creates a 5×5 matrix (one row/column per category)
+   - Rows = true labels, Columns = predicted labels
+
+4. **Calculate Metrics**
+   ```
+   Accuracy = (TP + TN) / Total Samples
+   Precision(class) = TP / (TP + FP)
+   Recall(class) = TP / (TP + FN)
+   F1-Score(class) = 2 × (Precision × Recall) / (Precision + Recall)
+   Macro-F1 = Average F1-Score across all classes
+   ```
+
+5. **Display Results**
+   - Prints confusion matrix
+   - Shows per-class metrics (Precision, Recall, F1-Score)
+   - Displays overall accuracy and macro-F1 score
+
+**Run Evaluation:**
+```bash
+mvn exec:java -Dexec.mainClass="ma.yassine.arabicnlp.evaluation.MetricsMain"
+```
+
+**Sample Output:**
+```
+Confusion Matrix:
+           مجتمع  سياسة  اقتصاد  رياضة  فنون
+مجتمع      45     2      1      0     2
+سياسة       3    42      2      1     2
+اقتصاد       1     2     43      1     3
+رياضة        0     1      1     44     4
+فنون         2     1      3      2    42
+
+Classification Metrics:
+مجتمع:  Precision=0.90  Recall=0.90  F1-Score=0.90
+سياسة:  Precision=0.88  Recall=0.84  F1-Score=0.86
+اقتصاد:  Precision=0.86  Recall=0.86  F1-Score=0.86
+رياضة:  Precision=0.88  Recall=0.88  F1-Score=0.88
+فنون:   Precision=0.84  Recall=0.84  F1-Score=0.84
+
+Overall Accuracy: 0.88
+Macro-F1 Score: 0.87
+```
+
+**Key Metrics Explained:**
+
+- **Accuracy**: Overall correctness of predictions
+- **Precision**: Of documents predicted as class X, how many were actually class X
+- **Recall**: Of all documents that should be class X, how many were correctly identified
+- **F1-Score**: Harmonic mean of Precision and Recall (good for imbalanced datasets)
+- **Macro-F1**: Unweighted average F1-Score across classes (treats all classes equally)
+
 ## Building & Running
 
 ### Prerequisites
@@ -302,6 +376,12 @@ Server runs on `http://localhost:4567`
 mvn exec:java -Dexec.mainClass="ma.yassine.arabicnlp.classification.supervised.NBMain"
 ```
 Creates classified clusters in `resources/data/classified_clusters/`
+
+**4. Evaluate Classifier Performance**
+```bash
+mvn exec:java -Dexec.mainClass="ma.yassine.arabicnlp.evaluation.MetricsMain"
+```
+Displays confusion matrix and evaluation metrics
 
 ## Technology Stack
 

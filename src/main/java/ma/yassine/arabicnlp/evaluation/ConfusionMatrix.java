@@ -1,24 +1,29 @@
 package ma.yassine.arabicnlp.evaluation;
 
-/**
- * Confusion matrix for classification evaluation
- */
+import java.util.*;
+
 public class ConfusionMatrix {
-    
-    /**
-     * Create confusion matrix from predictions
-     * @param predicted predicted labels
-     * @param actual actual labels
-     */
-    public ConfusionMatrix(int[] predicted, int[] actual) {
-        // Implementation for confusion matrix
+
+    private final Map<String, Map<String, Integer>> matrix = new HashMap<>();
+
+    public void add(String actual, String predicted) {
+        matrix
+            .computeIfAbsent(actual, k -> new HashMap<>())
+            .merge(predicted, 1, Integer::sum);
     }
-    
-    /**
-     * Get accuracy
-     * @return accuracy score
-     */
-    public double getAccuracy() {
-        return 0.0;
+
+    public int get(String actual, String predicted) {
+        return matrix.getOrDefault(actual, Map.of())
+                     .getOrDefault(predicted, 0);
+    }
+
+    public Set<String> labels() {
+        Set<String> labels = new HashSet<>(matrix.keySet());
+        matrix.values().forEach(m -> labels.addAll(m.keySet()));
+        return labels;
+    }
+
+    public Map<String, Map<String, Integer>> getMatrix() {
+        return matrix;
     }
 }
