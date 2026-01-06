@@ -1,4 +1,4 @@
-# Arabic NLP System - Complete Implementation Guide
+# Arabic NLP System
 
 A comprehensive **Natural Language Processing (NLP)** system for Arabic text classification and semantic search. This project demonstrates the complete NLP pipeline from data preprocessing, vectorization, search capabilities, to both supervised and unsupervised classification with comprehensive evaluation metrics.
 
